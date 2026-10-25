@@ -1,0 +1,37 @@
+`timescale 1ns / 1ps
+
+module main_control (
+    input  wire [5:0] op,         // Instr[31:26]
+    output reg        reg_write,
+    output reg        reg_dst,
+    output reg        alu_src,
+    output reg        branch,
+    output reg        mem_write,
+    output reg        mem_to_reg,
+    output reg  [1:0] alu_op,
+    output reg        jump
+);
+
+    // Định nghĩa hằng số Opcode theo chuẩn MIPS
+    localparam OP_RTYPE = 6'b000000;
+    localparam OP_LW    = 6'b100011;
+    localparam OP_SW    = 6'b101011;
+    localparam OP_BEQ   = 6'b000100;
+    localparam OP_ADDI  = 6'b001000;
+    localparam OP_J     = 6'b000010;
+
+    always @(*) begin
+        // Gộp 9 bit đầu ra theo đúng thứ tự bảng chân trị:
+        // {reg_write, reg_dst, alu_src, branch, mem_write, mem_to_reg, alu_op[1:0], jump}
+        case (op)
+            OP_RTYPE: {reg_write, reg_dst, alu_src, branch, mem_write, mem_to_reg, alu_op, jump} = 9'b1_1_0_0_0_0_10_0;
+            OP_LW:    {reg_write, reg_dst, alu_src, branch, mem_write, mem_to_reg, alu_op, jump} = 9'b1_0_1_0_0_1_00_0;
+            OP_SW:    {reg_write, reg_dst, alu_src, branch, mem_write, mem_to_reg, alu_op, jump} = 9'b0_0_1_0_1_0_00_0;
+            OP_BEQ:   {reg_write, reg_dst, alu_src, branch, mem_write, mem_to_reg, alu_op, jump} = 9'b0_0_0_1_0_0_01_0;
+            OP_ADDI:  {reg_write, reg_dst, alu_src, branch, mem_write, mem_to_reg, alu_op, jump} = 9'b1_0_1_0_0_0_00_0;
+            OP_J:     {reg_write, reg_dst, alu_src, branch, mem_write, mem_to_reg, alu_op, jump} = 9'b0_0_0_0_0_0_00_1;
+            default:  {reg_write, reg_dst, alu_src, branch, mem_write, mem_to_reg, alu_op, jump} = 9'b0_0_0_0_0_0_00_0;
+        endcase
+    end
+
+endmodule
